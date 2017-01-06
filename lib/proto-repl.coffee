@@ -678,6 +678,25 @@ module.exports = ProtoRepl =
 
           @executeCodeInNs(code)
 
+  # Show all references to selected function in ink popup similar to how saved values are displayed.
+  fetchAndDisplayUsagesOfVar: ->
+    displayInRepl: false
+    resultHandler: (result, options)=>
+      if result.error
+        @protoRepl.stderr("Error retrieving usages #{result.error}")
+        return
+      console.log result.value
+      # Convert the saved values into a map of uniq forms to the display trees
+      # uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
+      # find usages here
+
+      for [uniq, tree] in uniqsToTrees
+        # find the unique form in an editor
+        if foundRange = @protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
+          [editor, range] = foundRange
+          # Display the saved values inline next to the call to save them.
+          @protoRepl.repl.displayInline(editor, range, tree)
+
   # Opens the file containing the currently selected var or namespace in the REPL. If the file is located
   # inside of a jar file it will decompress the jar file then open it. It will first check to see if a
   # jar file has already been decompressed once to avoid doing it multiple times for the same library.
